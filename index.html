@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="src/styles/style.css" />
+    <title>Registro de Plantão</title>
+  </head>
+  <body>
+    <section id="conteudo_principal">
+      <h2>Registro de Plantão</h2>
+
+      <form id="plantao_form">
+        <label>Horário do Plantão:</label>
+        <select id="inicio_plantao" required>
+          <option value="">Início</option>
+          <option value="07:30">07:30</option>
+          <option value="08:30">08:30</option>
+          <option value="19:00">19:00</option>
+        </select>
+        <select id="fim_plantao" required>
+          <option value="">Fim</option>
+          <option value="15:00">15:00</option>
+          <option value="22:00">22:00</option>
+        </select>
+      </form>
+
+      <form id="atendimento_form">
+        <h3>Novo Atendimento</h3>
+        <input type="text" id="cliente" placeholder="Cliente" required />
+        <input type="text" id="problema" placeholder="Problema" required />
+        <input type="text" id="solucao" placeholder="Solução" required />
+        <label>Hora Inicial:</label>
+        <input type="time" id="hora_inicio" required />
+        <label>Hora Final:</label>
+        <input type="time" id="hora_fim" required />
+        <button type="submit">Adicionar Atendimento</button>
+      </form>
+
+      <ul id="lista_atendimentos"></ul>
+      <p>Tempo total de atendimentos: <span id="tempo_total">0</span></p>
+      <button id="limpar_dados" type="button">Limpar tudo</button>
+      <button id="exportar_excel" type="button">Exportar para Excel</button>
+    </section>
+
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <script src="src/javascript/script.js"></script>
+  </body>
+</html>
