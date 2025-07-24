@@ -33,7 +33,7 @@ function parseHorario(hora) {
 }
 
 function formatarHorario(minutos) {
-  const h = String(Math.floor(minutos / 60).padStart(2, "0"));
+  const h = String(Math.floor(minutos / 60)).padStart(2, "0");
   const m = String(minutos % 60).padStart(2, "0");
   return `${h}:${m}`;
 }
@@ -52,10 +52,10 @@ function formatarDuracao(minutos) {
 }
 
 function mesclarIntervalos(intervalos) {
-  if (!intervalos.lenght) return [];
+  if (!intervalos.length) return [];
   intervalos.sort((a, b) => a.inicio - b.inicio);
   const resultado = [intervalos[0]];
-  for (let i = 1; i < intervalos.lenght; i++) {
+  for (let i = 1; i < intervalos.length; i++) {
     const ultimo = resultado[resultado.length - 1];
     const atual = intervalos[i];
     if (atual.inicio <= ultimo.fim) {
@@ -80,6 +80,12 @@ function salvarNoLocalStorage() {
 }
 
 function editarAtendimento(index) {
+  if (emEdicao) {
+    if (!confirm("Você está editando um atendimento. Tem certeza que deseja descartar as alterações?")) {
+      return;
+    }
+  }
+  emEdicao = true;
   const a = atendimentos[index];
   cliente.value = a.cliente;
   problema.value = a.problema;
@@ -147,12 +153,8 @@ function atualizarLista() {
           <span class="span-info">${tempoFormatado}</span>
         </div>
         <div class="acoes-atendimento">
-          <button class="altera-btn" onclick="editarAtendimento(${
-            inicio + i
-          })">Alterar</button>
-          <button class="remove-btn" onclick="removerAtendimento(${
-            inicio + i
-          })">Remover</button>
+          <button class="altera-btn" title="Alterar este atendimento" onclick="editarAtendimento(${inicio + i})">Alterar</button>
+          <button class="remove-btn" title="Remover este atendimento" onclick="removerAtendimento(${inicio + i})">Remover</button>
         </div>
       </div>
     `;
@@ -204,36 +206,6 @@ function calcularTempoTotal() {
 }
 
 function calcularTempoTotalExportacao(atendimentos) {
-  function parseHorario(hora) {
-    const [h, m] = hora.split(":").map(Number);
-    return h * 60 + m;
-  }
-  function mesclarIntervalos(intervalos) {
-    if (!intervalos.length) return [];
-    intervalos.sort((a, b) => a.inicio - b.inicio);
-    const resultado = [intervalos[0]];
-    for (let i = 1; i < intervalos.length; i++) {
-      const ultimo = resultado[resultado.length - 1];
-      const atual = intervalos[i];
-      if (atual.inicio <= ultimo.fim) {
-        ultimo.fim = Math.max(ultimo.fim, atual.fim);
-      } else {
-        resultado.push(atual);
-      }
-    }
-    return resultado;
-  }
-  function formatarDuracao(minutos) {
-    const h = Math.floor(minutos / 60);
-    const m = minutos % 60;
-    const hh = h.toString().padStart(2, "0");
-    const mm = m.toString().padStart(2, "0");
-    if (h > 0) {
-      return `${hh}h${mm}min`;
-    } else {
-      return `${mm}min`;
-    }
-  }
   const intervalos = atendimentos.map((a) => ({
     inicio: parseHorario(a.horaInicio),
     fim: parseHorario(a.horaFim),
@@ -241,6 +213,13 @@ function calcularTempoTotalExportacao(atendimentos) {
   const blocos = mesclarIntervalos(intervalos);
   const total = blocos.reduce((acc, b) => acc + (b.fim - b.inicio), 0);
   return formatarDuracao(total);
+}
+
+function calcularDuracaoPlantao(inicio, fim) {
+  const inicioMin = parseHorario(inicio);
+  const fimMin = parseHorario(fim);
+  const duracao = fimMin - inicioMin;
+  return formatarDuracao(duracao);
 }
 
 document
@@ -251,6 +230,22 @@ document
       return;
     }
     const ws_data = [];
+
+    const hoje = new Date();
+    const dia = String(hoje.getDate()).padStart(2, "0");
+    const mes = String(hoje.getMonth() + 1).padStart(2, "0");
+    const dataPlantao = `${dia}/${mes}`;
+
+    const totalPlantao = calcularDuracaoPlantao(
+      inicioPlantao.value,
+      fimPlantao.value
+    );
+
+    const titulo = `Plantão de ${dataPlantao} das ${inicioPlantao.value} às ${fimPlantao.value} total de ${totalPlantao} com os atendimentos abaixo:`;
+
+    ws_data.push([titulo]);
+    ws_data.push([""]);
+
     atendimentos.forEach((a) => {
       ws_data.push(["Cliente:", a.cliente]);
       ws_data.push(["Problema:", a.problema]);
@@ -321,7 +316,8 @@ atendimentoForm.addEventListener("submit", (e) => {
     return;
   }
 
-  if (horaInicioMin === 7.5 * 60) {
+  if (horaInicioMin === 7.5 * 60) { // 7.5*60 = 450 minutos = 07:30
+    // Se o atendimento começa às 07:30, só pode ir até 15:00
     if (horaFimMin > 15 * 60) {
       alert("O horário final do atendimento não pode ser maior que 15:00.");
       return;
@@ -340,6 +336,7 @@ atendimentoForm.addEventListener("submit", (e) => {
   atendimentoForm.reset();
   atualizarLista();
   calcularTempoTotal();
+  emEdicao = false;
 });
 botaoLimpar.addEventListener("click", () => {
   if (confirm("Tem certeza que deseja apagar todos os dados?")) {
