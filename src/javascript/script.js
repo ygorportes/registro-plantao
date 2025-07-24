@@ -12,6 +12,7 @@ const botaoLimpar = document.getElementById("limpar_dados");
 let paginaAtual = 1;
 const atendimentosPorPagina = 5;
 const atendimentos = [];
+let emEdicao = false;
 
 const plantaoSalvo = localStorage.getItem("plantao");
 if (plantaoSalvo) {
