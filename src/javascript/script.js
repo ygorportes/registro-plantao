@@ -223,6 +223,41 @@ function calcularDuracaoPlantao(inicio, fim) {
   return formatarDuracao(duracao);
 }
 
+function validarHorarioEspecial() {
+  const inicioMin = parseHorario(horaInicio.value);
+  const fimMin = parseHorario(horaFim.value);
+  if ((inicioMin === 510 || inicioMin === 1140) && fimMin === 900) {
+    alert("Horário inválido!");
+    horaFim.value = "";
+    return false;
+  }
+  return true;
+}
+
+function validarHorarioPlantao() {
+  const inicioMin = parseHorario(inicioPlantao.value);
+  const fimMin = parseHorario(fimPlantao.value);
+
+  if (inicioMin === 450 && fimMin !== 900 && fimPlantao.value) {
+    alert("Horário inválido!");
+    fimPlantao.value = "";
+    return false;
+  }
+
+  if ((inicioMin === 510 || inicioMin === 1140) && fimMin !== 1320 && fimPlantao.value) {
+    alert("Horário inválido!");
+    fimPlantao.value = "";
+    return false;
+  }
+
+  if (fimMin <= inicioMin && fimPlantao.value) {
+    alert("Horário inválido!");
+    fimPlantao.value = "";
+    return false;
+  }
+  return true;
+}
+
 document
   .getElementById("exportar_excel")
   .addEventListener("click", function () {
@@ -283,8 +318,8 @@ document
     XLSX.writeFile(wb, "atendimentos.xlsx");
   });
 
-inicioPlantao.addEventListener("change", salvarPlantao);
-fimPlantao.addEventListener("change", salvarPlantao);
+inicioPlantao.addEventListener("change", validarHorarioPlantao);
+fimPlantao.addEventListener("change", validarHorarioPlantao);
 atendimentoForm.addEventListener("submit", (e) => {
   e.preventDefault();
   if (!inicioPlantao.value || !fimPlantao.value) {
@@ -325,6 +360,11 @@ atendimentoForm.addEventListener("submit", (e) => {
     }
   }
 
+  if ((horaInicioMin === 510 || horaInicioMin === 1140) && horaFimMin === 900) {
+    alert("Horário inválido!");
+    return;
+  }
+
   const atendimento = {
     cliente: cliente.value,
     problema: problema.value,
@@ -345,3 +385,6 @@ botaoLimpar.addEventListener("click", () => {
     location.reload();
   }
 });
+
+horaInicio.addEventListener("change", validarHorarioEspecial);
+horaFim.addEventListener("change", validarHorarioEspecial);
