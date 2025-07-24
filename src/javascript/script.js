@@ -297,6 +297,37 @@ atendimentoForm.addEventListener("submit", (e) => {
     );
     return;
   }
+
+  const inicioPlantaoMin = parseHorario(inicioPlantao.value);
+  const horaInicioMin = parseHorario(horaInicio.value);
+  const horaFimMin = parseHorario(horaFim.value);
+
+  if (horaInicioMin < inicioPlantaoMin) {
+    alert(
+      "O horário de início do atendimento não pode ser menor que o início do plantão."
+    );
+    return;
+  }
+
+  if (horaInicioMin >= 22 * 60) {
+    alert(
+      "Não é permitido registrar atendimentos que iniciam a partir das 22:00."
+    );
+    return;
+  }
+
+  if (horaFimMin > 22 * 60) {
+    alert("O horário final do atendimento não pode ser maior que 22:00.");
+    return;
+  }
+
+  if (horaInicioMin === 7.5 * 60) {
+    if (horaFimMin > 15 * 60) {
+      alert("O horário final do atendimento não pode ser maior que 15:00.");
+      return;
+    }
+  }
+
   const atendimento = {
     cliente: cliente.value,
     problema: problema.value,
